@@ -36,7 +36,8 @@ class Orchestra:
 
 		def getMP4Name():
 			c.execute("select name from movies where id = " + str(file.id) );
-			return c.fetchone()[0];
+			row = c.fetchone()
+			return row[0] if row is not None else None
 
 		c.execute("select exists(select 1 from movies where id = " + str(file.id) + " and completed = 1 limit 1)");
 		if c.fetchone()[0] == 0:

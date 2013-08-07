@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import putio
 import pprint
-import feedparser
+import sys
 import dateutil.parser
 from orchestra import Orchestra
 
