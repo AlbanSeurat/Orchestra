@@ -31,7 +31,7 @@ class Orchestra:
 		c = self.conn.cursor()
 		
 		def storeMP4Name(filename):
-			c.execute("insert or replace into movies (id, name, path, completed) values (%d, '%s', '%s', 0) " % ( file.id, file.name, filename))
+			c.execute("insert or replace into movies (id, name, path, completed) values (%d, '%s', '%s', 0) " % ( file.id, filename, Orchestra.MOVIES_DIR + "/" + filename))
 			self.conn.commit()
 
 		def getMP4Name():
