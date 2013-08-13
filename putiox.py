@@ -48,7 +48,7 @@ class PutioEx:
 
    	def _download_file(self, file, storeFunc, getName, dest, type = ""):	
 		
-		filename = os.path.join(dest, getName()) if getName() is not None else None
+		filename = os.path.join(dest, getName(file)) if getName(file) is not None else None
 		cursize = os.path.getsize(filename) if filename is not None and os.path.exists(filename) else 0
 		
         	response = self.client.request(
