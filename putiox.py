@@ -1,8 +1,13 @@
 import pprint
 import re
 import os.path
+from file import FileEx
 
-class PutioEx:
+class PutioEx(object):
+	
+	MOVIES_TYPE = 1
+	SERIES_TYPE = 2
+
 	def __init__(self, client):
     		self.client = client
 
@@ -12,7 +17,7 @@ class PutioEx:
 			if(file.content_type == "application/x-directory"):
 				self.parseDirectories(file.id, func)
 			else:
-				func(file)
+				func(FileEx(file))
 
 	def getDirectory(self, name): 
 		files = self.client.request("/files/search/" + name)
@@ -46,35 +51,24 @@ class PutioEx:
 		self.client.request("/files/" + str(file.id) + "/mp4", method="POST")
 
 
-   	def _download_file(self, file, storeFunc, getName, dest, type = ""):	
+   	def _download_file(self, file, fileName, type = ""):	
 		
-		filename = os.path.join(dest, getName(file)) if getName(file) is not None else None
-		cursize = os.path.getsize(filename) if filename is not None and os.path.exists(filename) else 0
-		
+		cursize = os.path.getsize(fileName) if os.path.exists(fileName) else 0
+
         	response = self.client.request(
         	    '/files/%s%s/download' % (file.id, type), headers={"Range" : "bytes=%d-" % cursize }, raw=True, stream=True )
         
-       		filename = re.match(
-            		'attachment; filename=(.*)',
-            		response.headers['content-disposition']).groups()[0]
-        
-		# If file name has spaces, it must have quotes around.
-	        filename = filename.strip('"')
-
-		#store the function into the database in case and error occured during the download
-		storeFunc(filename)
-
-        	with open(os.path.join(dest, filename), 'ab') as f:
+        	with open(fileName, 'ab') as f:
        		     for chunk in response.iter_content(chunk_size=1024):
                 	if chunk: # filter out keep-alive new chunks
                 	    f.write(chunk)
                 	    f.flush()
 
 
-	def downloadMP4(self, file, storeFunc, getName, dest):
+	def downloadMP4(self, file, fileName):
 		if file.content_type == "video/mp4":
-			self._download_file(file, storeFunc, getName, dest)
+			self._download_file(file, fileName)
 		else:
-			self._download_file(file, storeFunc, getName, dest, "/mp4")
+			self._download_file(file, fileName, "/mp4")
 			
 		

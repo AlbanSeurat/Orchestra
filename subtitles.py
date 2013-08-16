@@ -1,20 +1,17 @@
-import subliminal
 import os.path
 import pprint
 import struct
 import StringIO
-from subliminal.services import ServiceConfig
-from subliminal.services.opensubtitles import OpenSubtitles
-from subliminal.videos import Video
+from opensubtitle import OpenSubtitlesEx
 	
 
-class SubtitleEx:
+class SubtitleEx(object):
 
 	def __init__(self, client):
     		self.client = client
-		self.fileDir = os.path.dirname(os.path.realpath(__file__))
 		self.llFormat = 'q'
                 self.byteSize = struct.calcsize(self.llFormat) 
+		self.openSubtitle = OpenSubtitlesEx()
 
 	def _performHash(self, hash, content):
 
@@ -40,15 +37,14 @@ class SubtitleEx:
 
 		return (filesize, "%016x" % hash)
 
-	def downloadSubtitles(self, file, filename):
-			
-		video = Video.from_path(filename)
-		(video.size, video.hashes["OpenSubtitles"]) = self.calculateFileSizeAndHash(file)
-		
-		openSubtitle = OpenSubtitles(ServiceConfig(False, os.path.join(self.fileDir, ".cache")))
-		openSubtitle.init()
-		subtitles = openSubtitle.list(video, subliminal.language.language_set(["EN"]))
-		if(subtitles is not None):
-			subtitles.sort(key=lambda s: subliminal.core.key_subtitles(s, video, ["EN"], None, [subliminal.core.MATCHING_CONFIDENCE]), reverse=True)
-			openSubtitle.download(subtitles[0])
+	def getSubtitles(self, file):
+		(filesize, filehash) = self.calculateFileSizeAndHash(file)
+		subtitles = self.openSubtitle.list(filehash, filesize)
+		if subtitles:	
+			return subtitles[0]
+		else:
+			return None
+	
+	def downloadSubtitles(self, subtitle, fileName):
+		self.openSubtitle.download(subtitle, fileName)
 		

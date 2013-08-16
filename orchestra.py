@@ -1,69 +1,62 @@
-import sqlite3
 import putio
 import os.path
 import pprint
 import re
+import tmdb
 from putiox import PutioEx
+from file import FileEx
 from subtitles import SubtitleEx
+from sqlite import SQLiteEx
 
-class Orchestra:
-	MOVIES_DIR = "movies"
+class Orchestra(object):
 
-	def __init__(self, apiToken):
-		self.conn = sqlite3.connect('orchestra.db')
+	def __init__(self, apiToken, moviesDir):
 		handle = putio.Client(apiToken)
 		self.pclient = PutioEx(handle)
 		self.psubtitles = SubtitleEx(handle)
+		self.db = SQLiteEx('orchestra.db', handle)
+		self.moviesDir = moviesDir
+		self.tmdb = tmdb.configure("976f9bb138e603bc284e87d5c494d815")
 
-		if not os.path.exists(Orchestra.MOVIES_DIR):
-			os.mkdir(Orchestra.MOVIES_DIR)
+		if not os.path.exists(self.moviesDir):
+			os.mkdir(self.moviesDir)
 		self.movieId = self.pclient.getDirectory("Movies")
 
 		self.vidrgx = re.compile("^video/.*$")
 		self.vidnamergx = re.compile(".*sample.*", re.IGNORECASE)
-
-
-	def getMP4Name(self, file):
-		c = self.conn.cursor()
-		c.execute("select path from movies where id = " + str(file.id) );
-		row = c.fetchone()
-		return row[0] if row is not None else None
-
 	
 	def startup(self):
-		
-		self.pclient.parseDirectories(self.movieId, self.downloadFile)
+		self.pclient.parseDirectories(self.movieId, self.listMovie)
+		self.db.listNonCompletedMovies(self.prepareMovieData)
 
-	def downloadFile(self, file):
+	def listMovie(self, file):
 		if self.prepareMp4(file):
-			self.downloadMp4(file)
-			self.downloadSubtitle(file)
+			self.db.storeFileInfo(file, FileEx.MOVIES)
 
-	def downloadMp4(self, file):
-		c = self.conn.cursor()
+	def downloadFile(self, file, fileName):
+		if self.pclient.isMP4Complete(file):
+			self.downloadMp4(file, fileName)
 
-		def __storeMP4Name(filename):
-			c.execute("insert or replace into movies (id, name, path, completed) values (%d, '%s', '%s', 0) " % ( file.id, file.name, filename))
-			self.conn.commit()
+	def downloadMp4(self, file, fileName):
 		
-		c.execute("select exists(select 1 from movies where id = " + str(file.id) + " and completed = 1 limit 1)");
-		if c.fetchone()[0] == 0:
-			try:
-				self.pclient.downloadMP4(file, __storeMP4Name, self.getMP4Name, Orchestra.MOVIES_DIR)
-				c.execute("update movies set completed = 1 where id = %d " % file.id)
-				self.conn.commit()
-			except Exception, e:
-				print e
+		def __downloadMP4():
+			self.pclient.downloadMP4(file, os.path.join(self.moviesDir, fileName) + ".mp4")
 	
-	def downloadSubtitle(self, file):
-		self.psubtitles.downloadSubtitles(file, os.path.join(Orchestra.MOVIES_DIR, self.getMP4Name(file)))
+		self.db.runTransact(__downloadMP4, "update files set downloaded = 1, moviedb_name = '%s' where id = '%d' " % (fileName, file.id))
 		
+	
+	def prepareMovieData(self, file):
+		subtitle = self.psubtitles.getSubtitles(file)
+		movieName = subtitle.movieName + " (" + subtitle.movieYear + ")";
+		pprint.pprint(movieName)
+		self.downloadFile(file, movieName)
+		self.psubtitles.downloadSubtitles(subtitle, os.path.join(self.moviesDir, movieName) + ".srt")
 
 	def prepareMp4(self, file):
 		if self.vidrgx.match(file.content_type) is not None and self.vidnamergx.match(file.name) is None:
 			if not self.pclient.isMP4Ready(file):
 				self.pclient.prepareMP4(file)
-			return self.pclient.isMP4Complete(file)
+			return self.pclient.isMP4Ready(file)
 		return False
 			
 
