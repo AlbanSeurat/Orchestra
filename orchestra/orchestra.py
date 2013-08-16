@@ -2,7 +2,6 @@ import putio
 import os.path
 import pprint
 import re
-import tmdb
 from putiox import PutioEx
 from file import FileEx
 from subtitles import SubtitleEx
@@ -16,7 +15,6 @@ class Orchestra(object):
 		self.psubtitles = SubtitleEx(handle)
 		self.db = SQLiteEx('orchestra.db', handle)
 		self.moviesDir = moviesDir
-		self.tmdb = tmdb.configure("976f9bb138e603bc284e87d5c494d815")
 
 		if not os.path.exists(self.moviesDir):
 			os.mkdir(self.moviesDir)
