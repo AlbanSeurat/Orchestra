@@ -7,8 +7,9 @@ pprint.pprint(packages)
 setup(
     name = "Orchestra",
     version = "0.1",
-    packages = [ 'orchestra' ],
-    data_files=[ ('', ['__main__.py', ]) ],
+    packages = find_packages("src"),
+    package_dir={"": "src"},
+    data_files=[ ('', ['src/__main__.py', 'src/manage_movie.py' ]) ],
     
     author= "Alkpone",
     author_email = "alkpone@alkpone.com",
