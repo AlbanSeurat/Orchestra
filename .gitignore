@@ -33,3 +33,15 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Django files
+include
+lib
+local
+man
+share
+Scripts
+.Python
+*.pyc
+*~
+*.db
