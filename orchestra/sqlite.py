@@ -7,6 +7,7 @@ class SQLiteEx(object):
 
 	def __init__(self, dbname, client):
 		self.conn = sqlite3.connect(dbname)
+		self.conn.execute("CREATE TABLE if not exists files (id text primary key, type int, original_name text, moviedb_name text, downloaded int)");
 		self.client = client
 
 
