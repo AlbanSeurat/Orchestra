@@ -73,7 +73,7 @@ class PutioEx(object):
 		
 		cursize = os.path.getsize(fileName) if os.path.exists(fileName) else 0
 
-		if(cursize < file.mp4size):
+		if(cursize < file.mp4Size):
 			response = self.client.request(
         	    		'/files/%s%s/download' % (file.id, type), headers={"Range" : "bytes=%d-" % cursize }, raw=True, stream=True )
         
