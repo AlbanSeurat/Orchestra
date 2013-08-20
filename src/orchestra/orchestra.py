@@ -36,14 +36,14 @@ class Orchestra(object):
 		subtitle = self.psubtitles.getSubtitles(file)
 		movieName = subtitle.movieName + " (" + subtitle.movieYear + ")";
 		logger.info(movieName)
-		self.downloadFile(file, movieName)
+		self.downloadFile(file, movieName, subtitle)
 		
 		
-	def downloadFile(self, file, fileName):
+	def downloadFile(self, file, fileName, subtitle):
 		if self.pclient.isMP4Complete(file):
-			self.downloadMp4(file, fileName)
+			self.downloadMp4(file, fileName, subtitle)
 
-	def downloadMp4(self, file, fileName):
+	def downloadMp4(self, file, fileName, subtitle):
 		
 		def __downloadMP4():
 			self.pclient.downloadMP4(file, os.path.join(self.moviesDir, fileName) + ".mp4")
