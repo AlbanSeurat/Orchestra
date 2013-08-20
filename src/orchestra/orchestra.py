@@ -47,7 +47,7 @@ class Orchestra(object):
 		
 		def __downloadMP4():
 			self.pclient.downloadMP4(file, os.path.join(self.moviesDir, fileName) + ".mp4")
-			self.psubtitles.downloadSubtitles(subtitle, os.path.join(self.moviesDir, movieName) + ".srt")
+			self.psubtitles.downloadSubtitles(subtitle, os.path.join(self.moviesDir, fileName) + ".srt")
 	
 		self.db.runTransact(__downloadMP4, "update files set downloaded = 1, moviedb_name = '%s' where id = '%d' " % (fileName, file.id))
 			
