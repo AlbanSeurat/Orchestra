@@ -19,8 +19,12 @@ class SQLiteEx(object):
 	def listNonCompletedMovies(self, callback):
 		c = self.conn.cursor()
 		c.execute("select id, original_name from files where downloaded = 0 or downloaded is null");
-		for row in c: 
-			callback(self.pclient.getFile(int(row[0])))
+		for row in c:
+			if self.pclient.fileExists(int(row[0])):
+				callback(self.pclient.getFile(int(row[0])))
+			else:
+				c.execute("delete from files where id = %d" % int(row[0]));
+				self.conn.commit()
 			#res = self.client.request('/files/%i' % int(row[0]), method='GET')
 			#file = _File(res['file'])
         		#callback(FileEx(file, self.client.getMP4Size(file)))

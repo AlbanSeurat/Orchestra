@@ -29,6 +29,13 @@ class PutioEx(object):
 			return movieId
 		return None
 
+	def fileExists(self, id):
+		try:
+			res = self.client.request('/files/%i' % id, method='GET')
+			return True
+		except Exception as e:
+			return False
+
 	def getFile(self, id):
 		res = self.client.request('/files/%i' % id, method='GET')
 		file = _File(res['file'])
