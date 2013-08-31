@@ -47,7 +47,7 @@ class PutioEx(object):
 
 	def getMP4Size(self, file):
 		response = self.getMP4Infos(file)
-		if response is not None:
+		if response is not None and "size" in response:
 			return response["size"]
 		return None
 
