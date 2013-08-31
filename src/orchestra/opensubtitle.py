@@ -4,7 +4,10 @@ import pprint
 import StringIO
 import base64
 import gzip
+import logging
 from utils import to_unicode
+
+logger = logging.getLogger(__name__)
 
 class OpenSubtitlesEx():
     	server_url = 'http://api.opensubtitles.org/xml-rpc'
@@ -17,8 +20,9 @@ class OpenSubtitlesEx():
 
 	def list(self, moviehash, size):
         	results = self.server.SearchSubtitles(self.token, [{'moviehash': str(moviehash), 'moviebytesize': str(size), 'sublanguageid' : 'eng' }])
+		logger.debug(results)
         	subtitles = []
-		if results is True:
+		if results is not None:
  			for result in results['data']:
 				subtitles.append(Subtitle(result['SubDownloadLink'], result['SubFileName'], result['MovieName'], result['MovieYear'], result['IDSubtitleFile']))
        		return subtitles
