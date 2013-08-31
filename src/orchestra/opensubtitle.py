@@ -18,8 +18,9 @@ class OpenSubtitlesEx():
 	def list(self, moviehash, size):
         	results = self.server.SearchSubtitles(self.token, [{'moviehash': str(moviehash), 'moviebytesize': str(size), 'sublanguageid' : 'eng' }])
         	subtitles = []
- 		for result in results['data']:
-			subtitles.append(Subtitle(result['SubDownloadLink'], result['SubFileName'], result['MovieName'], result['MovieYear'], result['IDSubtitleFile']))
+		if results is True:
+ 			for result in results['data']:
+				subtitles.append(Subtitle(result['SubDownloadLink'], result['SubFileName'], result['MovieName'], result['MovieYear'], result['IDSubtitleFile']))
        		return subtitles
 
 

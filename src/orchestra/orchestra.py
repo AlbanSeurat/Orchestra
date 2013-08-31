@@ -34,9 +34,10 @@ class Orchestra(object):
 
 	def prepareMovieData(self, file):
 		subtitle = self.psubtitles.getSubtitles(file)
-		movieName = subtitle.movieName + " (" + subtitle.movieYear + ")";
-		logger.info(movieName)
-		self.downloadFile(file, movieName, subtitle)
+		if subtitle is not None:
+			movieName = subtitle.movieName + " (" + subtitle.movieYear + ")";
+			logger.info(movieName)
+			self.downloadFile(file, movieName, subtitle)
 		
 		
 	def downloadFile(self, file, fileName, subtitle):
