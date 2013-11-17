@@ -9,4 +9,6 @@ The first scripts done are
    - able to download english subtitles associated with the movies 
    - rename the file to ease XBMC to download movie information from IMDB
    
+build
 
+python setup bdist_egg

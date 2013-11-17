@@ -22,7 +22,7 @@ class OpenSubtitlesEx():
         	results = self.server.SearchSubtitles(self.token, [{'moviehash': str(moviehash), 'moviebytesize': str(size), 'sublanguageid' : 'eng' }])
 		logger.debug(results)
         	subtitles = []
-		if results is not None:
+		if results is not None and results['data'] is not False:
  			for result in results['data']:
 				subtitles.append(Subtitle(result['SubDownloadLink'], result['SubFileName'], result['MovieName'], result['MovieYear'], result['IDSubtitleFile']))
        		return subtitles
