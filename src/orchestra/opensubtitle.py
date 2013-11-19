@@ -5,6 +5,7 @@ import StringIO
 import base64
 import gzip
 import logging
+import re
 from utils import to_unicode
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,10 @@ class OpenSubtitlesEx():
         	subtitles = []
 		if results is not None and results['data'] is not False:
  			for result in results['data']:
-				subtitles.append(Subtitle(result['SubDownloadLink'], result['SubFileName'], result['MovieName'], result['MovieYear'], result['IDSubtitleFile']))
+				if result['MovieKind'] == "episode":
+					subtitles.append(SerieSubtitle(result['SubDownloadLink'], result['SubFileName'], result['IDSubtitleFile'], result['MovieName'], result['SeriesSeason'], result['SeriesEpisode']))
+				else:		
+					subtitles.append(MovieSubtitle(result['SubDownloadLink'], result['SubFileName'], result['IDSubtitleFile'], result['MovieName'], result['MovieYear']))
        		return subtitles
 
 
@@ -44,19 +48,43 @@ class OpenSubtitlesEx():
 		   	 	#if os.path.exists(subtitle.path):
 		        	#	os.remove(subtitle.path)
 		    		raise Exception(str(e))
-		
 
 
 class Subtitle(object):
 	
-	def __init__(self, downloadLink, fileName, movieName, movieYear, subFileId):
+	def __init__(self, downloadLink, fileName, subFileId, simpleName):
 		self.downloadLink = downloadLink
 		self.fileName = to_unicode(fileName)
+		self.subFileId = subFileId
+		self.simpleName = simpleName
+
+class MovieSubtitle(Subtitle):
+	
+	def __init__(self, downloadLink, fileName, subFileId, movieName, movieYear):
+		super(MovieSubtitle, self).__init__(downloadLink, fileName, subFileId, movieName)
 		self.movieName = movieName
 		self.movieYear = movieYear
-		self.subFileId = subFileId
 
 
 	def __repr__(self):
 		return "%s<%s : %s - %s>" % (self.__class__.__name__, self.fileName.encode('ascii', 'ignore'), self.downloadLink, self.movieName + "(" + self.movieYear + ")" )
+
+
+
+class SerieSubtitle(Subtitle):
+	p = re.compile("\"([^\"]*)\" (.*)")
+	
+	def __init__(self, downloadLink, fileName, subFileId, serieName, serieSeason, serieEpisode):
+		super(SerieSubtitle, self).__init__(downloadLink, fileName, subFileId, serieName)
+		m = self.p.match(serieName)
+		self.serieName = m.group(1)
+		self.episodeName = m.group(2)
+		self.simpleName = self.serieName
+		self.serieSeason = int(serieSeason)
+		self.serieEpisode = int(serieEpisode)
+
+
+	def __repr__(self):
+		return "%s<%s : %s - %s>" % (self.__class__.__name__, self.fileName.encode('ascii', 'ignore'), self.downloadLink, self.serieName + ".s%02de%02d" % ( self.serieSeason , self.serieEpisode) + " " + self.episodeName )
+
 

@@ -1,4 +1,5 @@
 
+import os, errno
 
 def to_unicode(data):
     	"""Convert a basestring to unicode
@@ -18,3 +19,12 @@ def to_unicode(data):
 		except UnicodeDecodeError:
 	    		pass
     	return unicode(data, 'utf-8', 'replace')
+
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc: # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else: raise

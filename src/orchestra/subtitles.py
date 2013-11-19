@@ -2,10 +2,13 @@ import os.path
 import pprint
 import struct
 import StringIO
+import re
 from opensubtitle import OpenSubtitlesEx
 	
 
 class SubtitleEx(object):
+
+	p = re.compile
 
 	def __init__(self, client):
     		self.client = client
@@ -28,22 +31,28 @@ class SubtitleEx(object):
 
 		response = self.client.request('/files/%d' % file.id )
 		hash = filesize = response["file"]["size"]
+		return (filesize, response["file"]["opensubtitles_hash"])
 
-		response = self.client.request('/files/%d/download' % file.id, headers={"Range" : "bytes=0-65535" }, raw=True, stream=True )
-                hash = self._performHash(hash, response.content)
+		#response = self.client.request('/files/%d/download' % file.id, headers={"Range" : "bytes=0-65535" }, raw=True, stream=True )
+                #hash = self._performHash(hash, response.content)
 
-		response = self.client.request('/files/%d/download' % file.id, headers={"Range" : "bytes=%d-" % (filesize - 65536) }, raw=True, stream=True )
-                hash = self._performHash(hash, response.content)
+		#response = self.client.request('/files/%d/download' % file.id, headers={"Range" : "bytes=%d-" % (filesize - 65536) }, raw=True, stream=True )
+                #hash = self._performHash(hash, response.content)
 
-		return (filesize, "%016x" % hash)
+		#return (filesize, "%016x" % hash)
 
 	def getSubtitles(self, file):
 		(filesize, filehash) = self.calculateFileSizeAndHash(file)
 		subtitles = self.openSubtitle.list(filehash, filesize)
-		if subtitles:	
-			return subtitles[0]
-		else:
-			return None
+		if subtitles is not None:
+			for sub in subtitles:		
+				noSpaceName = "".join(sub.simpleName.split())
+				dotName = ".".join(sub.simpleName.split())
+				p = re.compile(".*%s.*|.*%s.*|.*%s.*" % (sub.simpleName, noSpaceName, dotName), re.IGNORECASE)
+				if p.match(file.name):
+					return sub
+			return subtitles[0]	
+		return None
 	
 	def downloadSubtitles(self, subtitle, fileName):
 		self.openSubtitle.download(subtitle, fileName)

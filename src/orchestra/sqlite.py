@@ -16,18 +16,15 @@ class SQLiteEx(object):
 		c.execute("update files set type = ?, original_name = ?, mp4size = ? where id = ?" , (type, file.name, file.mp4Size, file.id))
 		self.conn.commit()
 
-	def listNonCompletedMovies(self, callback):
+	def listNonCompletedFiles(self, callback, fileType):
 		c = self.conn.cursor()
-		c.execute("select id, original_name from files where downloaded = 0 or downloaded is null");
+		c.execute("select id, original_name from files where downloaded = 0 or downloaded is null and type = %d" % fileType);
 		for row in c:
 			if self.pclient.fileExists(int(row[0])):
 				callback(self.pclient.getFile(int(row[0])))
 			else:
 				c.execute("delete from files where id = %d" % int(row[0]));
 				self.conn.commit()
-			#res = self.client.request('/files/%i' % int(row[0]), method='GET')
-			#file = _File(res['file'])
-        		#callback(FileEx(file, self.client.getMP4Size(file)))
 
 	def runTransact(self, func, query):
 		c = self.conn.cursor()
