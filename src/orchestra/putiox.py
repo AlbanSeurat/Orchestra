@@ -84,7 +84,7 @@ class PutioEx(object):
         	    		'/files/%s%s/download' % (file.id, type), headers={"Range" : "bytes=%d-" % cursize }, raw=True, stream=True )
         
         		with open(fileName, 'ab') as f:
-       		    		for chunk in response.iter_content(chunk_size=1024):
+       		    		for chunk in response.iter_content(chunk_size=64*1024):
                 			if chunk: # filter out keep-alive new chunks
                 	    			f.write(chunk)
                 	    			f.flush()
