@@ -2,13 +2,15 @@ import os.path
 import pprint
 import struct
 import StringIO
+import logging
 import re
 from opensubtitle import OpenSubtitlesEx
-	
+
+logger = logging.getLogger(__name__)
 
 class SubtitleEx(object):
 
-	p = re.compile
+	pSub = re.compile('[\W\s]+')
 
 	def __init__(self, client):
     		self.client = client
@@ -30,8 +32,7 @@ class SubtitleEx(object):
 	def calculateFileSizeAndHash(self, file):
 
 		response = self.client.request('/files/%d' % file.id )
-		hash = filesize = response["file"]["size"]
-		return (filesize, response["file"]["opensubtitles_hash"])
+		return (response["file"]["size"], response["file"]["opensubtitles_hash"])
 
 		#response = self.client.request('/files/%d/download' % file.id, headers={"Range" : "bytes=0-65535" }, raw=True, stream=True )
                 #hash = self._performHash(hash, response.content)
@@ -43,15 +44,17 @@ class SubtitleEx(object):
 
 	def getSubtitles(self, file):
 		(filesize, filehash) = self.calculateFileSizeAndHash(file)
+		logger.debug("file (%s) : size : %d, hash %s" % (file.name, filesize, filehash))
 		subtitles = self.openSubtitle.list(filehash, filesize)
+		logger.debug("subtitles %s" % subtitles)
 		if subtitles is not None:
-			for sub in subtitles:		
-				noSpaceName = "".join(sub.simpleName.split())
-				dotName = ".".join(sub.simpleName.split())
-				p = re.compile(".*%s.*|.*%s.*|.*%s.*" % (sub.simpleName, noSpaceName, dotName), re.IGNORECASE)
-				if p.match(file.name):
-					return sub
-			return subtitles[0]	
+			for sub in subtitles:
+				subName = self.pSub.sub('', sub.simpleName)
+				fileName = self.pSub.sub('', file.name)	
+				p = re.compile(".*%s.*" % subName, re.IGNORECASE)
+				logger.debug("match %s to %s" % (subName, fileName))
+				if p.match(fileName):
+					return sub	
 		return None
 	
 	def downloadSubtitles(self, subtitle, fileName):

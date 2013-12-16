@@ -21,7 +21,6 @@ class OpenSubtitlesEx():
 
 	def list(self, moviehash, size):
         	results = self.server.SearchSubtitles(self.token, [{'moviehash': str(moviehash), 'moviebytesize': str(size), 'sublanguageid' : 'eng' }])
-		logger.debug(results)
         	subtitles = []
 		if results is not None and results['data'] is not False:
  			for result in results['data']:

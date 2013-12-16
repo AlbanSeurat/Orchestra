@@ -46,7 +46,6 @@ class PutioEx(object):
 			if file.content_type == "video/mp4":
 				return { u"status" : "COMPLETED", u"size" : file.size }
 			response = self.client.request("/files/" + str(file.id) + "/mp4")
-			logger.debug(response)
 			if "mp4" in response :
 				if "status" in response["mp4"]:
 					return response["mp4"]
