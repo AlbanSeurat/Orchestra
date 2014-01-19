@@ -11,4 +11,4 @@ The first scripts done are
    
 build
 
-python setup bdist_egg
+python setup.py bdist_egg

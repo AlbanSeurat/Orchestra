@@ -65,7 +65,7 @@ class Orchestra(object):
 			self.psubtitles.downloadSubtitles(subtitle, os.path.join(self.moviesDir, fileName) + ".srt")
 
 		if self.pclient.isMP4Complete(file):
-			self.db.runTransact(__downloadMovieMP4, "update files set downloaded = 1, moviedb_name = '%s' where id = '%d' " % (fileName, file.id))
+			self.db.runTransact(__downloadMovieMP4, "update files set downloaded = 1, moviedb_name = ? where id = ? ", (fileName, file.id))
 			
 
 	def downloadSerie(self, file, serieName, serieSeason, fileName, subtitle):
@@ -78,6 +78,6 @@ class Orchestra(object):
 			self.psubtitles.downloadSubtitles(subtitle, os.path.join(episodeDir, fileName) + ".srt")
 
 		if self.pclient.isMP4Complete(file):
-			self.db.runTransact(__downloadSerieMP4, "update files set downloaded = 1, moviedb_name = '%s' where id = '%d' " % (fileName, file.id))
+			self.db.runTransact(__downloadSerieMP4, "update files set downloaded = 1, moviedb_name = ? where id = ? ", (fileName, file.id))
 			
 

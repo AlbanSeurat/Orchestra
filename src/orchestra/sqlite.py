@@ -26,11 +26,11 @@ class SQLiteEx(object):
 				c.execute("delete from files where id = %d" % int(row[0]));
 				self.conn.commit()
 
-	def runTransact(self, func, query):
+	def runTransact(self, func, query, queryParam):
 		c = self.conn.cursor()
 		try:
 			func()
-			c.execute(query);
+			c.execute(query, queryParam);
 			self.conn.commit()
 		except Exception, e:
 			print e
