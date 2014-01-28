@@ -48,21 +48,21 @@ class Orchestra(object):
 		if subtitle is not None:
 			movieName = subtitle.movieName + " (" + subtitle.movieYear + ")";
 			logger.info(movieName)
-			self.downloadMovie(file, movieName, subtitle)
+			self.downloadMovie(file, movieName.replace("/", "_"), subtitle)
 
 	def downloadSeriesData(self, file):
 		subtitle = self.psubtitles.getSubtitles(file)
 		if subtitle is not None:
 			serieEpisode = subtitle.serieName + ".s%02de%02d" % ( subtitle.serieSeason , subtitle.serieEpisode)
 			logger.info(serieEpisode)
-			self.downloadSerie(file, subtitle.serieName, subtitle.serieSeason, serieEpisode, subtitle)
+			self.downloadSerie(file, subtitle.serieName, subtitle.serieSeason, serieEpisode.replace("/", "_"), subtitle)
 				
 
 	def downloadMovie(self, file, fileName, subtitle):
 		
 		def __downloadMovieMP4():
-			self.pclient.downloadMP4(file, os.path.join(self.moviesDir, fileName) + ".mp4")
 			self.psubtitles.downloadSubtitles(subtitle, os.path.join(self.moviesDir, fileName) + ".srt")
+			self.pclient.downloadMP4(file, os.path.join(self.moviesDir, fileName) + ".mp4")
 
 		if self.pclient.isMP4Complete(file):
 			self.db.runTransact(__downloadMovieMP4, "update files set downloaded = 1, moviedb_name = ? where id = ? ", (fileName, file.id))
@@ -74,8 +74,8 @@ class Orchestra(object):
 			episodeDir = os.path.join(self.seriesDir, serieName, "season%d" % serieSeason)
 			if not os.path.exists(episodeDir):
 				mkdir_p(episodeDir)
-			self.pclient.downloadMP4(file, os.path.join(episodeDir, fileName) + ".mp4")
 			self.psubtitles.downloadSubtitles(subtitle, os.path.join(episodeDir, fileName) + ".srt")
+			self.pclient.downloadMP4(file, os.path.join(episodeDir, fileName) + ".mp4")
 
 		if self.pclient.isMP4Complete(file):
 			self.db.runTransact(__downloadSerieMP4, "update files set downloaded = 1, moviedb_name = ? where id = ? ", (fileName, file.id))
