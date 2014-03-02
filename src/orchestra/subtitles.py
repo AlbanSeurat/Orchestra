@@ -18,29 +18,10 @@ class SubtitleEx(object):
                 self.byteSize = struct.calcsize(self.llFormat) 
 		self.openSubtitle = OpenSubtitlesEx()
 
-	def _performHash(self, hash, content):
-
-		f = StringIO.StringIO(content)
-		for x in range(65536/self.byteSize): 
-                        buffer = f.read(self.byteSize) 
-                        (l_value,)= struct.unpack(self.llFormat, buffer)  
-                        hash += l_value 
-                        hash = hash & 0xFFFFFFFFFFFFFFFF 
-		f.close()
-		return hash
-
 	def calculateFileSizeAndHash(self, file):
 
 		response = self.client.request('/files/%d' % file.id )
 		return (response["file"]["size"], response["file"]["opensubtitles_hash"])
-
-		#response = self.client.request('/files/%d/download' % file.id, headers={"Range" : "bytes=0-65535" }, raw=True, stream=True )
-                #hash = self._performHash(hash, response.content)
-
-		#response = self.client.request('/files/%d/download' % file.id, headers={"Range" : "bytes=%d-" % (filesize - 65536) }, raw=True, stream=True )
-                #hash = self._performHash(hash, response.content)
-
-		#return (filesize, "%016x" % hash)
 
 	def getSubtitles(self, file):
 		(filesize, filehash) = self.calculateFileSizeAndHash(file)
@@ -53,7 +34,7 @@ class SubtitleEx(object):
 				fileName = self.pSub.sub('', file.name)	
 				p = re.compile(".*%s.*" % subName, re.IGNORECASE)
 				logger.debug("match %s to %s" % (subName, fileName))
-				if p.match(fileName):
+				if len(subName) > 0 and p.match(fileName):
 					return sub	
 		return None
 	
